@@ -5,6 +5,7 @@
 #include <unistd.h>   //для системных вызовов (read, write, close)
 #include <signal.h>   //для обработки сигнала
 #include <errno.h>    //для обработки ошибок
+#include <fstream>
 
 using namespace std;
 
@@ -32,7 +33,13 @@ int main()
     }
 
     cout << "Server is running... Waiting for the client's messages." << endl;
-
+     //создание файла с историей переписки
+    ofstream history("/tmp/chat_history.txt", ios::trunc);
+    if (!history) {
+        cerr << "Error opening history file!" << endl;
+        return 1;
+    }
+    history<<"Server is running... Waiting for the client's messages."<<endl;
     while (true)
     {
         // открываем FIFO для чтения и записываем файловый дескриптор в fd
@@ -47,19 +54,31 @@ int main()
         // массив для хранения считанных данных
         char buffer[1024] = {0};
         ssize_t bytes_read = read(fd, buffer, sizeof(buffer) - 1);
-
+        
         if (bytes_read > 0)
         {
             // добавляем символ конца строки и выводим сообщение
             buffer[bytes_read] = '\0';
             cout << "Received: " << buffer << endl;
+            history << "Received: "<< buffer << endl;
 
             // проверка не завершил ли работу пользователь
             if (strcmp(buffer, "exit") == 0)
             {
                 cout << "Client requested to exit. Shutting down server." << endl;
+                history << "Client requested to exit. Shutting down server." << endl;
                 close(fd);
                 break;
+            }
+            else if (strcmp(buffer, "history") == 0){
+                string outputer;
+                ifstream open_history("/tmp/chat_history.txt");
+                cout << "--- Start history ---" << endl;
+                while (getline(open_history, outputer)){
+                    cout << outputer <<endl;
+                }
+                open_history.close();
+                cout << "--- End history ---" << endl;
             }
 
             // открываем FIFO для записи
@@ -72,6 +91,9 @@ int main()
             }
             // формируем строку с ответом и записываем её
             string response = "Wow, " + string(buffer) + "!";
+            if (strcmp(buffer, "history") !=0){
+                history << response << endl;
+            }
             write(fd, response.c_str(), response.length());
             close(fd);
         }
@@ -87,6 +109,7 @@ int main()
             close(fd);
         }
     }
+    history.close();
 
     unlink(PATH); // yдаляем FIFO при завершении
     return 0;
