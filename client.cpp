@@ -1,10 +1,8 @@
-#include <iostream> //для ввода/вывода
-#include <cstring>  
+#include <iostream>   //для ввода/вывода
 #include <fcntl.h>    //для работы с файловыми дескрипторами
 #include <unistd.h>   //для системных вызовов (read, write, close)
 #include <sys/stat.h> //для создания FIFO
 #include <errno.h>    //для обработки ошибок
-#include <fstream>
 
 using namespace std;
 
@@ -51,12 +49,9 @@ int main()
         // записвыаем ввод пользователя
         write(fd, message.c_str(), message.length());
         close(fd);
-        if (message == "history"){
-            cout << "History" << endl;
-        }
 
         // проверяем не завершает ли работу пользователь
-        else if (message == "exit")
+        if (message == "exit")
         {
             cout << "Exit." << endl;
             break;
@@ -80,9 +75,7 @@ int main()
         {
             // добавляем символ конца строки и выводим сообщение
             buffer[bytes_read] = '\0';
-            if (strcmp(buffer, "Wow, history!") != 0){
-                cout << "Server response: " << buffer << endl;
-            }
+            cout << "Server response: " << buffer << endl;
         }
         // обработка случаев, когда bytes_read не положителен
         else if (bytes_read == -1)
