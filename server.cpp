@@ -73,10 +73,22 @@ int main()
             else if (strcmp(buffer, "history") == 0){
                 string outputer;
                 ifstream open_history("/tmp/chat_history.txt");
+                fd = open(PATH, O_WRONLY);
+                if (fd == -1)
+                {
+                    perror("Error opening FIFO for reading");
+                    return 1;
+                }
+                string history_to_client;
+                history_to_client+="--- Start history ---\n";
                 cout << "--- Start history ---" << endl;
                 while (getline(open_history, outputer)){
+                    history_to_client+=outputer + "\n";
                     cout << outputer <<endl;
                 }
+                history_to_client+="--- End history ---\n";
+                write (fd, history_to_client.c_str(), history_to_client.length());
+                close(fd);
                 open_history.close();
                 cout << "--- End history ---" << endl;
             }
@@ -90,11 +102,11 @@ int main()
                 return 1;
             }
             // формируем строку с ответом и записываем её
-            string response = "Wow, " + string(buffer) + "!";
             if (strcmp(buffer, "history") !=0){
+                string response = "Wow, " + string(buffer) + "!";
                 history << response << endl;
+                write(fd, response.c_str(), response.length());
             }
-            write(fd, response.c_str(), response.length());
             close(fd);
         }
         // обработка случаев, когда bytes_read не положителен
