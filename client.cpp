@@ -80,11 +80,15 @@ int main()
         {
             // добавляем символ конца строки и выводим сообщение
             buffer[bytes_read] = '\0';
+<<<<<<< HEAD
             if (message == "history"){
                 cout << buffer <<endl;
                 buffer[1024]={0};
             }
             else{
+=======
+            if (strcmp(buffer, "Wow, history!") != 0){
+>>>>>>> 18ba9981ce89b77655ef3ea57eb294d356f9702c
                 cout << "Server response: " << buffer << endl;
             }
         }
